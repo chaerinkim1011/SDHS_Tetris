@@ -1,43 +1,74 @@
-using Unity.VisualScripting;
-using UnityEngine;
+ï»¿using UnityEngine;
 
-public class TetrisBlock : MonoBehaviour
+public class TetrisBlock : MonoBehaviour   // [MonoBehaviour ìƒì†]
 {
-    //°ÔÀÓ º¸µå ÂüÁ¶
-    private GameBoard gameBoard;
-    public float fallSpeed = 1f;
-    private float fallTimer = 0f;
+    // ----- [ìš°ë¦¬ ë©¤ë²„] -----
+    private GameBoard gameBoard;   // ê²Œì„ ë³´ë“œ ì°¸ì¡° (Startì—ì„œ ì°¾ìŒ)
+    public float fallSpeed = 1f;  // ë‚™í•˜ ì†ë„: ëª‡ ì´ˆì— í•œ ì¹¸
+    private float fallTimer = 0f; // ë‚™í•˜ íƒ€ì´ë¨¸ (Updateì—ì„œ ëˆ„ì )
 
-    private void Start()
+    void Start()   // [Unityê°€ í˜¸ì¶œ] ì”¬ì— ì˜¬ë¼ì˜¨ ë’¤ í•œ ë²ˆ
     {
-        //À¯´ÏÆ¼¿¡¼­ GameBoard ¿ÀºêÁ§Æ® Ã£±â
-        gameBoard = FindFirstObjectByType<GameBoard>();
+        gameBoard = FindAnyObjectByType<GameBoard>();   // [Unity API] ì”¬ì—ì„œ GameBoard ì°¾ê¸°
+    }
 
-        //ÃÊ±â À§Ä¡ ¼³Á¤ (º¸µå Áß¾Ó »ó´Ü)
-        if (gameBoard != null)
-        {
-            //Spawner À§Ä¡¿¡ µû¶ó ´Ş¶óÁú ¼ö ÀÖÁö¸¸, ¿©±â¼­´Â (5, 17)·Î °¡Á¤
-            transform.position = new Vector3(5, 17, 0);
-        }
-
-        //ÀÚ½Ä ºí·Ï °³¼ö È®ÀÎ
-        int childCount = transform.childCount;
-
-        //Ã¹ ¹øÂ° ÀÚ½Ä ºí·Ï °¡Á®¿À±â
-        Transform firstBlock = transform.GetChild(0);
-
-        //¸ğµç ÀÚ½Ä ºí·Ï ¼øÈ¸
+    // [ìš°ë¦¬ ë©”ì†Œë“œ] offset ë°©í–¥ìœ¼ë¡œ í•œ ì¹¸ ê°”ì„ ë•Œ ë³´ë“œ ë²”ìœ„ ì•ˆì¸ì§€ (ë¶€ëª¨ ì˜ˆì • ìœ„ì¹˜ ê¸°ì¤€)
+    bool ValidMove(Vector3 offset)
+    {
+        Vector3 parentNew = transform.position + offset;
         for (int i = 0; i < transform.childCount; i++)
         {
-            Transform block = transform.GetChild(i);
-            //ºí·Ï À§Ä¡: block.position ¶Ç´Â block.localPosition
+            Transform child = transform.GetChild(i);
+            Vector3 childWorld = parentNew + transform.TransformDirection(child.localPosition);
+            Vector3Int cell = Vector3Int.RoundToInt(childWorld);
+            if (cell.x < 0 || cell.x >= gameBoard.width || cell.y < 0 || cell.y >= gameBoard.height)
+                return false;
+            if (!gameBoard.IsCellEmpty(cell.x, cell.y))   // â† 6ë‹¨ê³„ ì¶”ê°€
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void MoveLeft()   // [ìš°ë¦¬ ë©”ì†Œë“œ] 5ë‹¨ê³„ InputHandlerê°€ í˜¸ì¶œ
+    {
+        if (ValidMove(Vector3.left))
+        {
+            transform.position += Vector3.left;   // [Unity í”„ë¡œí¼í‹°]
+        }
+    }
+    public void MoveRight()
+    {
+        if (ValidMove(Vector3.right))
+        {
+            transform.position += Vector3.right;
+        }
+    }
+    public void MoveDown()
+    {
+        if (ValidMove(Vector3.down))
+        {
+            transform.position += Vector3.down;
+        }
+        else
+        {
+            LockPiece();
         }
     }
 
-    private void Update()
+    public void Rotate()   // 90ë„ ì‹œê³„ ë°©í–¥ (ë¶€ëª¨ë§Œ ëŒë¦¼, ìì‹ì€ ë”°ë¼ ê°)
     {
-        //ÀÚµ¿ ³«ÇÏ
-        fallTimer += Time.deltaTime;
+        transform.Rotate(0f, 0f, -90f);
+        if (!ValidMove(Vector3.zero))
+        {
+            transform.Rotate(0f, 0f, 90f);
+        }
+    }
+
+    void Update()   // [Unityê°€ í˜¸ì¶œ] ë§¤ í”„ë ˆì„
+    {
+        fallTimer += Time.deltaTime;   // [Unity í”„ë¡œí¼í‹°] í”„ë ˆì„ ê°„ ê²½ê³¼ ì‹œê°„
         if (fallTimer >= fallSpeed)
         {
             MoveDown();
@@ -45,116 +76,19 @@ public class TetrisBlock : MonoBehaviour
         }
     }
 
-    //ÀÌµ¿ °¡´ÉÇÑÁö È®ÀÎÇÏ´Â ÇÔ¼ö
-    bool ValidMove(Vector3 offset)
+    public void LockPiece()
     {
-
-        //¸ğµç ÀÚ½Ä ºí·Ï È®ÀÎ
-        for (int i = 0; i < transform.childCount; i++)
+        if (gameBoard != null)
         {
-            Transform child = transform.GetChild(i);
+            gameBoard.AddToGrid(this);
+            gameBoard.ClearFullRows();
 
-            //ÀÌµ¿ ÈÄ À§Ä¡ °è»ê
-            Vector3 newPos = child.position + offset;
-
-            //Unity ÁÂÇ¥¸¦ Á¤¼ö·Î ¹İ¿Ã¸² (°ÔÀÓ º¸µå ±×¸®µå¿¡ ¸ÂÃß±â À§ÇÔ)
-            int roundX = Mathf.RoundToInt(newPos.x);
-            int roundY = Mathf.RoundToInt(newPos.y);
-
-            //º¸µå ¹üÀ§  È®ÀÎ
-            //¿Ö ||(¶Ç´Â)ÀÎ°¡? "¹üÀ§ ¹Û" = "x°¡ ³Ê¹« ÀÛ°Å³ª OR ³Ê¹« Å©°Å³ª OR y°¡ ³Ê¹« ÀÛ°Å³ª OR ³Ê¹« Å©´Ù"
-            // ¡æ ÇÏ³ª¶óµµ ÇØ´çµÇ¸é ¹üÀ§ ¹ÛÀÌ¹Ç·Î || »ç¿ë (¹üÀ§ "¾È"ÀÌ¸é && »ç¿ë)
-            if (roundX < 0 || roundX >= gameBoard.width ||
-                roundY < 0 || roundY >= gameBoard.height)
+            Spawner spawner = FindAnyObjectByType<Spawner>();
+            if (spawner != null)
             {
-                return false; //¹üÀ§ ¹Û!!
-            }
-
-            //ÀÌ¹Ì ºí·ÏÀÌ ÀÖ´ÂÁö È®ÀÎ
-            //if (!gameBoard.IsCellEmpty(roundX, roundY))
-            //return false; //ÀÌ¹Ì ºí·ÏÀÌ ÀÖÀ½!!
-        }
-        return false; //ÀÌµ¿ °¡´É!!
-    }
-
-    public void MoveLeft()
-    {
-        if (ValidMove(Vector3.left)) //¿ŞÂÊÀ¸·Î 1Ä­
-        {
-            transform.position += Vector3.left;
-        }
-    }
-
-    public void MoveRight()
-    {
-        if (ValidMove(Vector3.right)) //¿À¸¥ÂÊÀ¸·Î 1Ä­
-        {
-            transform.position += Vector3.right;
-        }
-    }
-
-    public void MoveDown()
-    {
-        if (ValidMove(Vector3.down)) // ¾Æ·¡·Î 1Ä­ 
-        {
-            transform.position += Vector3.down;
-        }
-        else
-        {
-            //´õ ÀÌ»ó ³»·Á°¥ ¼ö ¾øÀ¸¸é ºê·Ï °íÁ¤ (6´Ü°è¿¡¼­ ±¸Çö)
-            //LockPiece();
-        }
-    }
-
-    public void Rotate()
-    {
-        //È¸Àü ÈÄ À§Ä¡µéÀ» ÀúÀåÇÒ ¹è¿­ (ÀÚ½Ä °³¼ö¸¸Å­)
-        Vector3[] newLocalPositions = new Vector3[transform.childCount];
-
-        //°¢ ÀÚ½Ä ºí·ÏÀÇ Local PositionÀ» 90µµ È¸Àü
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            Transform child = transform.GetChild(i);
-            Vector3 localPos = child.localPosition;
-
-            // 90µµ ½Ã°è ¹æÇâ È¸Àü °ø½Ä: (x, y) -> (y, -x)
-            float newX = localPos.y;
-            float newY = localPos.x;
-            newLocalPositions[i] = new Vector3(newX, -newY, 0);
-        }
-
-        //È¸Àü ÈÄ À§Ä¡°¡ À¯È¿ÇÑÁö È®ÀÎ
-        bool canRotate = true;
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            Transform child = transform.GetChild(i);
-            Vector3 newWorldPos = transform.position + newLocalPositions[i];
-
-            //Unity ÁÂÇ¥¸¦ Á¤¼ö·Î ¹İ¿Ã¸²
-            int roundX = Mathf.RoundToInt(newWorldPos.x);
-            int roundY = Mathf.RoundToInt(newWorldPos.y);
-
-            //º¸µå ¹üÀ§ È®ÀÎ
-            if (roundX < 0 || roundX >= gameBoard.width ||
-                roundY < 0 || roundY >= gameBoard.height)
-            {
-                canRotate = false; //¹üÀ§ ¹Û
-                break;
-            }
-
-           
-        }
-
-        //È¸Àü °¡´ÉÇÏ¸é Àû¿ë
-        if (canRotate)
-        {
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                Transform child = transform.GetChild(i);
-                child.localPosition = newLocalPositions[i];
+                spawner.SpawnNext();
             }
         }
-
+        Destroy(gameObject);
     }
 }
-

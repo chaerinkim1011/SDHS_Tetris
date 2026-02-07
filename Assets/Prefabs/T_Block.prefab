@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1090842167955097482}
+  - component: {fileID: 4772102284561138622}
   m_Layer: 0
   m_Name: T_Block
   m_TagString: Untagged
@@ -35,6 +36,19 @@ Transform:
   - {fileID: 4330817866605046530}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4772102284561138622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 906566417697607838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0d6abaeca08b7d46aee7590056aa248, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TetrisBlock
+  fallSpeed: 1
 --- !u!1 &2066525075400373453
 GameObject:
   m_ObjectHideFlags: 0
