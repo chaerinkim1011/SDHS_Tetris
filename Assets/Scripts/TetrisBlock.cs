@@ -24,9 +24,7 @@ public class TetrisBlock : MonoBehaviour   // [MonoBehaviour 상속]
             if (cell.x < 0 || cell.x >= gameBoard.width || cell.y < 0 || cell.y >= gameBoard.height)
                 return false;
             if (!gameBoard.IsCellEmpty(cell.x, cell.y))   // ← 6단계 추가
-            {
                 return false;
-            }
         }
         return true;
     }
@@ -66,13 +64,30 @@ public class TetrisBlock : MonoBehaviour   // [MonoBehaviour 상속]
         }
     }
 
-    void Update()   // [Unity가 호출] 매 프레임
+    void Update()   
     {
-        fallTimer += Time.deltaTime;   // [Unity 프로퍼티] 프레임 간 경과 시간
-        if (fallTimer >= fallSpeed)
+        // GameController에서 현재 레벨 가져오기
+        GameController gameController = FindAnyObjectByType<GameController>();
+        if (gameController != null)
         {
-            MoveDown();
-            fallTimer = 0f;
+            // 레벨이 높을수록 낙하 속도 빠름
+            float currentFallSpeed = fallSpeed / gameController.level;
+            fallTimer += Time.deltaTime;
+            if (fallTimer >= currentFallSpeed)
+            {
+                MoveDown();
+                fallTimer = 0f;
+            }
+        }
+        else
+        {
+            // GameController가 없으면 기본 속도 사용
+            fallTimer += Time.deltaTime;
+            if (fallTimer >= fallSpeed)
+            {
+                MoveDown();
+                fallTimer = 0f;
+            }
         }
     }
 
@@ -81,7 +96,13 @@ public class TetrisBlock : MonoBehaviour   // [MonoBehaviour 상속]
         if (gameBoard != null)
         {
             gameBoard.AddToGrid(this);
-            gameBoard.ClearFullRows();
+            int linesCleared = gameBoard.ClearFullRows();   // 반환값 받기
+
+            GameController gameController = FindAnyObjectByType<GameController>();
+            if (gameController != null)
+            {
+                gameController.AddScore(linesCleared);
+            }
 
             Spawner spawner = FindAnyObjectByType<Spawner>();
             if (spawner != null)

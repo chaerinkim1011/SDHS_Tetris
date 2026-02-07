@@ -42,7 +42,6 @@ public class GameBoard : MonoBehaviour
             }
         }
     }
-
     bool IsRowFull(int row)
     {
         for (int x = 0; x < width; x++)
