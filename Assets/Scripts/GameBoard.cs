@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class GameBoard : MonoBehaviour
 {
-   public int width = 10; //가로 10칸
+    public int width = 10; //가로 10칸
     public int height = 20; //세로 20칸
 
     private Transform[,] grid;
@@ -96,4 +96,18 @@ public class GameBoard : MonoBehaviour
         return linesCleared;
     }
 
+    public bool IsGameOver()   //Spawner에서 호출
+    {
+        // 스폰 영역(위에서 2줄: row 18·19)에 블록이 하나라도 있으면 게임 오버
+        for (int y = height - 2; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (grid[x, y] != null)
+                    return true;
+            }
+        }
+        return false;
+
+    }
 }

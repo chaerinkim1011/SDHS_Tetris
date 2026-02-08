@@ -13,7 +13,7 @@ public class TetrisBlock : MonoBehaviour   // [MonoBehaviour 상속]
     }
 
     // [우리 메소드] offset 방향으로 한 칸 갔을 때 보드 범위 안인지 (부모 예정 위치 기준)
-    bool ValidMove(Vector3 offset)
+    public bool ValidMove(Vector3 offset)
     {
         Vector3 parentNew = transform.position + offset;
         for (int i = 0; i < transform.childCount; i++)
@@ -112,4 +112,14 @@ public class TetrisBlock : MonoBehaviour   // [MonoBehaviour 상속]
         }
         Destroy(gameObject);
     }
+
+    public void HardDrop()
+    {
+        while (ValidMove(Vector3.down))
+        {
+            transform.position += Vector3.down;
+        }
+        LockPiece();
+    }
+
 }

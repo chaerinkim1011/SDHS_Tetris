@@ -11,9 +11,11 @@ public class GameController : MonoBehaviour
     public TMP_Text scoreText;
     public TMP_Text linesText;
     public TMP_Text levelText;
+    public TMP_Text gameOverText;
 
-    private void Start()
+    void Start()
     {
+        gameOverText.gameObject.SetActive(false);   // ½ÃÀÛÇÒ ¶§ ¼û±è
         UpdateUI();
     }
 
@@ -31,6 +33,12 @@ public class GameController : MonoBehaviour
         lines += linesCleared;
         level = (lines / 10) + 1;
         UpdateUI();
+    }
+
+    public void GameOver()  
+    {
+        gameOverText.gameObject.SetActive(true); 
+        gameOverText.text = "Game Over";
     }
 
     void UpdateUI()
